@@ -57,7 +57,7 @@ class ModelDemo:
         patience_es = 4
         callbacks = self.get_callbacks(patience_lr, patience_es)
         
-        ### Train model
+        ### Train model&Save model
         model = None
         model = self.create_model(dim_1D, n_hidden_1)
         model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy']) 

@@ -65,6 +65,7 @@ class ModelDemo:
                   class_weight=None, sample_weight=None, initial_epoch=0,
                   callbacks = callbacks)
         model.save(modelname)
+        model.summary()
         self.model = model
     
     def predict(self, peptides):
@@ -77,7 +78,7 @@ class ModelDemo:
 ### Load data
 import os
 os.getcwd() #get current work direction
-os.chdir('/home/wmy/SSh_Project/Project-Pan_Allele') #change direction
+os.chdir('/lustre/wendy/Project-Pan_Allele') #change direction
 hits_train = open('peptides_A0101_9.txt', mode='r').readlines()
 hits_train = [x.strip() for x in hits_train]
 decoys_train = open('decoys_train_9.txt', mode='r').readlines()
