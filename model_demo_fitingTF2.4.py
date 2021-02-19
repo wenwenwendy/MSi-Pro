@@ -1,17 +1,22 @@
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 import keras
+import tensorflow 
 from keras.models import Sequential, Model
 from keras.layers import Input, Dense
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.utils import np_utils
+
+#used for k fold CV
+from sklearn.model_selection import StratifiedKFold
+
 # Make sure the model is reproducible
 from random import choices
 from numpy.random import seed
 seed(1171)
-import tensorflow 
 #set_random_seed(1231)
 tensorflow.random.set_seed(1231)
+
 amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 
 class ModelDemo:
@@ -54,17 +59,30 @@ class ModelDemo:
         patience_es = 4
         callbacks = self.get_callbacks(patience_lr, patience_es)
         
-        ### Train model
-        model = None
-        model = self.create_model(dim_1D, n_hidden_1)
-        model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy']) 
-        model.fit(x = np.array(encoded_x), y = np.array(y),
-                  verbose=2,
+
+        ###Train model
+        x = np.array(encoded_x)
+        y = np.array(y)
+        # define 5-fold cross validation test harness
+        kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+        cvscores = []
+        for train, test in kfold.split(x, y):
+            # create model
+            model = None
+            model = self.create_model(dim_1D, n_hidden_1)
+            # Compile model
+            model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])  
+            # Fit the model
+            model.fit(x[train], y[train], verbose=2,
                   batch_size=batch_size, 
                   epochs=nEpochs, shuffle=True, 
-                  validation_split=0.1,
                   class_weight=None, sample_weight=None, initial_epoch=0,
                   callbacks = callbacks)
+            # evaluate the model
+            scores = model.evaluate(x[test], y[test], verbose=2)
+            print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+            cvscores.append(scores[1] * 100)
+        print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
         model.save(modelname)
         model.summary()
         self.model = model
@@ -86,33 +104,14 @@ decoys_train = open('decoys_train_9.txt', mode='r').readlines()
 decoys_train = [x.strip() for x in decoys_train]
 
 
-### 5folds cross validation
-# define 10-fold cross validation test harness
-kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
-cvscores = []
-for train, test in kfold.split(X, Y):
-  # create model
-    model = Sequential()
-    model.add(Dense(12, input_dim=8, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    # Fit the model
-    model.fit(X[train], Y[train], epochs=150, batch_size=10, verbose=0)
-    # evaluate the model
-    scores = model.evaluate(X[test], Y[test], verbose=0)
-    print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-    cvscores.append(scores[1] * 100)
-print("%.2f%% (+/- %.2f%%)" % (numpy.mean(cvscores), numpy.std(cvscores)))
-
 
 ### Train model
+# create modeld
 model = ModelDemo()
 # For demo purposes only, this model training is carried
 # out on the full data set, no cross-fold splits here!
-model.train(hits_train, decoys_train,str('test_model.h5'))
 
+model.train(hits_train, decoys_train,'testforaddkfold_model.h5')
 ### Use model to predict
 # For demo purposes only, this prediction is on 
 # the same set of hits the model was trained on!
