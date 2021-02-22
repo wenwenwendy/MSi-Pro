@@ -11,11 +11,14 @@ from keras.utils import np_utils
 from sklearn.model_selection import StratifiedKFold
 
 # Make sure the model is reproducible
+
+
 from random import choices
-from numpy.random import seed
-seed(1171)
-#set_random_seed(1231)
-tensorflow.random.set_seed(1231)
+#from numpy.random import seed
+seed=1171
+np.random.seed(seed)
+
+
 
 amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 
@@ -79,10 +82,11 @@ class ModelDemo:
                   class_weight=None, sample_weight=None, initial_epoch=0,
                   callbacks = callbacks)
             # evaluate the model
-            scores = model.evaluate(x[test], y[test], verbose=2)
+            scores = model.evaluate(x[test], y[test], verbose=0)
             print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
             cvscores.append(scores[1] * 100)
         print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
+        print(cvscores)
         model.save(modelname)
         model.summary()
         self.model = model
@@ -115,6 +119,6 @@ model.train(hits_train, decoys_train,'testforaddkfold_model.h5')
 ### Use model to predict
 # For demo purposes only, this prediction is on 
 # the same set of hits the model was trained on!
-preds = model.predict(['SADSFQSFY'])
+preds = model.predict(['SADSFASFY'])
 print(preds)
 
