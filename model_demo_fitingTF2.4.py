@@ -9,7 +9,8 @@ from keras.utils import np_utils
 
 #used for k fold CV
 from sklearn.model_selection import StratifiedKFold
-
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import classification_report
 # Make sure the model is reproducible
 
 
@@ -85,6 +86,14 @@ class ModelDemo:
             scores = model.evaluate(x[test], y[test], verbose=0)
             print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
             cvscores.append(scores[1] * 100)
+            
+            #predict the model 
+            y_pred= model.predict(x[test])
+           
+            print(classification_report(y[test], y_pred.round()))
+
+   
+
         print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
         print(cvscores)
         model.save(modelname)
