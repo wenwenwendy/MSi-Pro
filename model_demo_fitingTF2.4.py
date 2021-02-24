@@ -51,7 +51,7 @@ class ModelDemo:
         x = [list(p) for p in bindersx10] + [list(s) for s in nonbindersx10]
         y = [1] * len(bindersx10) + [0] * len(nonbindersx10)
         encoder = OneHotEncoder(
-            categories=[list(amino_acids)] * 9)
+            categories=[list(amino_acids)] * 8)
         encoder.fit(x)
         encoded_x = encoder.transform(x).toarray()
         dim_1D = len(encoder.categories_)*20
@@ -128,7 +128,7 @@ class ModelDemo:
     def predict(self, peptides):
         x = [list(p) for p in peptides]
         encoder = OneHotEncoder(
-            categories=[list(amino_acids)] * 9)
+            categories=[list(amino_acids)] * 8)
         encoder.fit(x)
         return self.model.predict(encoder.transform(x).toarray()).squeeze()
 
@@ -137,9 +137,9 @@ class ModelDemo:
 os.getcwd()  # get current work direction
 os.chdir('/lustre/wendy/data/rawdata/txtfile/')  # change direction
 #待读取的文件夹
-decoys_train = open('decoys_train_9.txt', mode='r').readlines()
+decoys_train = open('decoys_train_8.txt', mode='r').readlines()
 decoys_train = [x.strip() for x in decoys_train]
-path="/lustre/wendy/data/rawdata/txtfile/9-length/"
+path="/lustre/wendy/data/rawdata/txtfile/8-length/"
 path_list=os.listdir(path)
 path_list.sort() #对读取的路径进行排序
 
@@ -148,7 +148,7 @@ for filename in path_list:
     #print(os.path.join(path,filename))
     print('now is training:',filename)
 
-    #9-length loop
+    #8-length loop
     hits_train = open(os.path.join(path,filename), mode='r').readlines()
     hits_train = [x.strip() for x in hits_train]
     # Train model
