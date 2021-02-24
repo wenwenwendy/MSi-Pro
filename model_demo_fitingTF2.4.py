@@ -68,18 +68,14 @@ class ModelDemo:
         # Train model
         x = np.array(encoded_x)
         y = np.array(y)
-
-        # define 5-fold cross validation test harness
-        kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
         
         # build a blank dataframe
         df_report=pd.DataFrame(columns=('precision','recall','f1-score','support'))
-
         cvscores = []
-        list_report=[]
-
         fold_var = 1
-        save_dir = '/lustre/wendy/data/model_trained/'
+
+        # define 5-fold cross validation test harness
+        kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
 
         for train, test in kfold.split(x, y):
             # create model
@@ -96,7 +92,7 @@ class ModelDemo:
                       callbacks=callbacks)
             # evaluate the model
             scores = model.evaluate(x[test], y[test], verbose=0)
-            print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+            #print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
             cvscores.append(scores[1] * 100)
 
             # predict the model
@@ -107,20 +103,25 @@ class ModelDemo:
             #list_report.append(report) 
             df_transpose = pd.DataFrame(report).transpose()
             df_report =df_report.append(df_transpose, ignore_index=False)
-            print(classification_report(y[test], y_pred.round()))
+            #print(classification_report(y[test], y_pred.round()))
             
             #save model at every fold
-            model.save('/lustre/wendy/data/model_trained/'+ modelname +'fold_var'+ str(fold_var)+".h5")
+            model.save('/lustre/wendy/data/model_trained/'+ modelname +'_fold_var'+ str(fold_var)+".h5")
 
             fold_var += 1
             #confusion_matrix
             #cm = confusion_matrix(y[test], y_pred.round())
             #tn, fp, fn, tp = cm.ravel()
-        print(df_report)
+        print("classification_report:",df_report)
+        print('cv:',cvscores)
         print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
-        print(cvscores)
+        
         #print(list_report)
+
+        #save reports
         df_report.to_csv('/lustre/wendy/data/reports/'+ modelname,index=True)
+        data_cvscores = np.array(cvscores)
+        np.savez('/lustre/wendy/data/reports/'+ modelname+'cvscores', data_cvscores)
         model.summary()
         self.model = model
 
@@ -134,22 +135,26 @@ class ModelDemo:
 
 # Load data
 os.getcwd()  # get current work direction
-os.chdir('/lustre/wendy/Project-Pan_Allele')  # change direction
-hits_train = open('peptides_A0101_9.txt', mode='r').readlines()
-hits_train = [x.strip() for x in hits_train]
+os.chdir('/lustre/wendy/data/rawdata/txtfile/')  # change direction
+#待读取的文件夹
 decoys_train = open('decoys_train_9.txt', mode='r').readlines()
 decoys_train = [x.strip() for x in decoys_train]
+path="/lustre/wendy/data/rawdata/txtfile/9-length/"
+path_list=os.listdir(path)
+path_list.sort() #对读取的路径进行排序
 
+#loop
+for filename in path_list:
+    #print(os.path.join(path,filename))
+    print('now is training:',filename)
 
-# Train model
-# create modeld
-model = ModelDemo()
-# For demo purposes only, this model training is carried
-# out on the full data set, no cross-fold splits here!
+    #9-length loop
+    hits_train = open(os.path.join(path,filename), mode='r').readlines()
+    hits_train = [x.strip() for x in hits_train]
+    # Train model
+    # create modeld
+    model = ModelDemo()
+    # For demo purposes only, this model training is carried
+    # out on the full data set, no cross-fold splits here!
+    model.train(hits_train, decoys_train,str(filename[:7]))
 
-model.train(hits_train, decoys_train, 'testforaddkfold_model')
-# Use model to predict
-# For demo purposes only, this prediction is on
-# the same set of hits the model was trained on!
-preds = model.predict(['SADSFASFY'])
-print(preds)
