@@ -154,6 +154,8 @@ path="/lustre/wmy/Project/data/rawdata/txtfile/11-length/"
 path_list=os.listdir(path)
 path_list.sort() #对读取的路径进行排序
 
+
+#
 #loop
 for filename in path_list:
     #print(os.path.join(path,filename))
@@ -170,3 +172,4 @@ for filename in path_list:
     # out on the full data set, no cross-fold splits here!
     model.train(hits_train, decoys_train,str(filename[:-4]))
 
+#

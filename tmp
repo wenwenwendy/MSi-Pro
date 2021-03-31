@@ -1,0 +1,261 @@
+{
+ "metadata": {
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5-final"
+  },
+  "orig_nbformat": 2,
+  "kernelspec": {
+   "name": "python3",
+   "display_name": "Python 3.8.5 64-bit ('base': conda)",
+   "metadata": {
+    "interpreter": {
+     "hash": "9e4afad3f8ce946b477d8f79170849f46667ae7108752632af1064c658900591"
+    }
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2,
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 59,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "##environment requirments:python 3.8.5 (base:conda)\n",
+    "\n",
+    "from operator import index\n",
+    "import os\n",
+    "import numpy as np\n",
+    "from sklearn.preprocessing import OneHotEncoder\n",
+    "import keras\n",
+    "import tensorflow\n",
+    "from keras.models import Sequential, Model\n",
+    "from keras.layers import Input, Dense\n",
+    "from keras.callbacks import EarlyStopping, ReduceLROnPlateau\n",
+    "from keras.utils import np_utils\n",
+    "import pandas as pd\n",
+    "# used for k fold CV\n",
+    "from sklearn.model_selection import StratifiedKFold\n",
+    "from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix\n",
+    "from sklearn.metrics import classification_report\n",
+    "# Make sure the model is reproducible\n",
+    "\n",
+    "\n",
+    "from random import choices\n",
+    "#from numpy.random import seed\n",
+    "seed = 1171\n",
+    "np.random.seed(seed)\n",
+    "\n",
+    "\n",
+    "amino_acids = \"ACDEFGHIKLMNPQRSTVWY\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Load data\n",
+    "os.getcwd()  # get current work direction\n",
+    "os.chdir('/lustre/wendy/data/rawdata/txtfile/')  # change direction\n",
+    "#待读取的文件夹\n",
+    "decoys_train = open('decoys_train_8.txt', mode='r').readlines()\n",
+    "nonbinders = [x.strip() for x in decoys_train]\n",
+    "path=\"/lustre/wendy/data/rawdata/txtfile/8-length/A0207_8.txt\"\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": [
+      "len of x1: 179\nlen of x2: 1790\nlen of y1: 1790\n"
+     ]
+    }
+   ],
+   "source": [
+    "#10-length loop\n",
+    "hits_train = open((path), mode='r').readlines()\n",
+    "binders = [x.strip() for x in hits_train]\n",
+    "print('len of x1:',len(binders))\n",
+    "bindersx10 = choices(binders, k=10*len(binders))\n",
+    "nonbindersx10 = choices(nonbinders, k=len(bindersx10))\n",
+    "x = [list(p) for p in bindersx10] + [list(s) for s in nonbindersx10]\n",
+    "print('len of x2:',len(bindersx10))\n",
+    "y = [1] * len(bindersx10) + [0] * len(nonbindersx10)\n",
+    "print('len of y1:',len(nonbindersx10))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 93,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": [
+       "3580"
+      ]
+     },
+     "metadata": {},
+     "execution_count": 93
+    }
+   ],
+   "source": [
+    "encoder = OneHotEncoder(\n",
+    "    categories=[list(amino_acids)] * 8)##/10-length/\n",
+    "encoder.fit(x)\n",
+    "len(x)\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 86,
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "\n",
+    "encoded_x = encoder.transform(x).toarray()\n",
+    "encoded_x.shape\n",
+    "dim_1D = len(encoder.categories_)*20\n",
+    "x = np.array(encoded_x)\n",
+    "y = np.array(y)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": [
+       "(3580, 160)"
+      ]
+     },
+     "metadata": {},
+     "execution_count": 87
+    }
+   ],
+   "source": [
+    "encoded_x.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 88,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": [
+      "(3580, 160)\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(x.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": [
+      "[[0. 0. 0. ... 0. 0. 0.]\n [0. 0. 0. ... 0. 0. 0.]\n [1. 0. 0. ... 0. 0. 0.]\n ...\n [0. 0. 0. ... 0. 0. 0.]\n [0. 0. 0. ... 0. 0. 0.]\n [0. 0. 0. ... 0. 0. 0.]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(encoded_x)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": [
+       "(3580, 160)"
+      ]
+     },
+     "metadata": {},
+     "execution_count": 90
+    }
+   ],
+   "source": [
+    "encoded_x.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": [
+      "10mer-x-afterencoder: (3580, 160)\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('10mer-x-afterencoder:',x.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": [
+      "10mer-y-afterencoder: (2800,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('10mer-y-afterencoder:',y.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ]
+}
