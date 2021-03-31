@@ -3,9 +3,13 @@ python==3.8.5
 tensorflow ==2.2
 keras==2.4.3
 
-##usage##
+##class_Model.py##
 #train:
 class_Model.py is the main function, which comtains a class called ModelDemo. There's a train function in the class and 
 using the def train() can train the data you input and return a model. 
 #pridict:
 using the def predict() in ModelDemo class can geiv the prediction that a peptide belonging to one allel and one length
+
+
+train_model_with_data_MSi.py 
+This script can load taining data and call ModelDemo function to complete the train. 
