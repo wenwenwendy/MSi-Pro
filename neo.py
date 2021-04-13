@@ -74,10 +74,7 @@ class ModelDemo:
         encoder = OneHotEncoder(
             categories=[list(amino_acids)] * seqlen)
         encoder.fit(x)
-        encoded_x = encoder.transform(x).toarray()
-        dim_1D = len(encoder.categories_)*20
-        # eg.9mers,全连接的输入dim为9*20=180，9是特征的个数，即9个长度，20是20个氨基酸
-        x = np.array(encoded_x)
+        x = np.array(x)
         y = np.array(y)
 
         # build a blank dataframe
@@ -110,6 +107,12 @@ class ModelDemo:
             # 在traindata里随机选择，产生10倍大小的traindata
             trainx10 = choices(train, k=10*len(train))
 
+            # onehot squencing
+            x_to_train = encoder.transform(x[trainx10]).toarray().astype(int)
+            dim_1D = len(encoder.categories_)*20
+            # eg.9mers,全连接的输入dim为9*20=180，9是特征的个数，即9个长度，20是20个氨基酸
+            y_to_train = np.array(y[trainx10])
+
             # create model
             model = None
             model = self.create_model(dim_1D, n_hidden_1)
@@ -118,7 +121,7 @@ class ModelDemo:
                           loss='binary_crossentropy', metrics=['accuracy'])
 
             # Fit the model
-            model.fit(x[trainx10], y[trainx10], verbose=1,
+            model.fit(x_to_train, y_to_train, verbose=1,
                       batch_size=batch_size,
                       validation_data = (x[test], y[test]),
                       epochs=nEpochs, shuffle=True,

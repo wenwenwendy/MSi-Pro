@@ -25,7 +25,7 @@ from random import choices
 #from numpy.random import seed
 seed = 1171
 np.random.seed(seed)
-
+seqlen = 11
 
 amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 
@@ -66,12 +66,9 @@ class ModelDemo:
         x = [list(p) for p in binders] + [list(s) for s in nonbinders]
         y = [1] * len(binders) + [0] * len(nonbinders)
         encoder = OneHotEncoder(
-            categories=[list(amino_acids)] * 11)
+            categories=[list(amino_acids)] *seqlen)
         encoder.fit(x)
-        encoded_x = encoder.transform(x).toarray()
-        dim_1D = len(encoder.categories_)*20
-        # eg.9mers,全连接的输入dim为9*20=180，9是特征的个数，即9个长度，20是20个氨基酸
-        x = np.array(encoded_x)
+        x = np.array(x)
         y = np.array(y)
         
         # build a blank dataframe
@@ -85,6 +82,16 @@ class ModelDemo:
         for train, test in kfold.split(x, y):
             print('\nFold ',fold_var)
 
+            # 在traindata里随机选择，产生10倍大小的traindata
+            trainx10 = choices(train, k=10*len(train))
+
+            # onehot squencing
+            x_to_train = encoder.transform(x[trainx10]).toarray().astype(int)
+            dim_1D = len(encoder.categories_)*20
+            # eg.9mers,全连接的输入dim为9*20=180，9是特征的个数，即9个长度，20是20个氨基酸
+            y_to_train = np.array(y[trainx10])
+
+
             # train Model params
             nEpochs = 10
             batch_size = 30
@@ -97,8 +104,7 @@ class ModelDemo:
             #model.save('/lustre/wendy/movebyzx/data/model_trained/'+ modelname +'_fold_var'+ str(fold_var)+".h5")
             callbacks = self.get_callbacks(patience_lr, patience_es,weight_best_path)
             
-            # 在traindata里随机选择，产生10倍大小的traindata
-            trainx10 = choices(train, k=10*len(train))
+            
 
             # create model
             model = None
@@ -108,7 +114,7 @@ class ModelDemo:
                           loss='binary_crossentropy', metrics=['accuracy'])
 
             # Fit the model
-            model.fit(x[trainx10], y[trainx10], verbose=1,
+            model.fit(x_to_train, y_to_train, verbose=1,
                       batch_size=batch_size,
                       validation_data = (x[test], y[test]),
                       epochs=nEpochs, shuffle=True,
@@ -164,6 +170,6 @@ class ModelDemo:
     def predict(self, peptides):
         x = [list(p) for p in peptides]
         encoder = OneHotEncoder(
-            categories=[list(amino_acids)] * 11)
+            categories=[list(amino_acids)] * seqlen)
         encoder.fit(x)
         return self.model.predict(encoder.transform(x).toarray()).squeeze()
