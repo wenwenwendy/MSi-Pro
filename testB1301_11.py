@@ -18,7 +18,7 @@ path_list.sort() #对读取的路径进行排序
 
 #print(os.path.join(path,filename))
 #print('now is training:',filename)
-with open("/lustre/wmy/Project/data/data_MSi/11_length/B1301_11.csv") as csvfile:
+with open("/lustre/wmy/Project/data/data_MSi/done/A0202_11.csv") as csvfile:
     reader = csv.reader(csvfile)
     next(reader)
     hits_train = [row[2] for row in reader]
@@ -29,7 +29,7 @@ print('len of hits_train:',len(hits_train))
 #print(hits_train)
 # Train model Create modeld
 model = ModelDemo()
-model.train(hits_train, decoys_train,'B1301_11')
+model.train(hits_train, decoys_train,'A0202_11_k1999k210')
 
 #
 

@@ -28,17 +28,26 @@ from random import choices
 
 seed = 1171
 np.random.seed(seed)
-seqlen = 8
-
 amino_acids = "ACDEFGHIKLMNPQRSTVWY"
+# train Model params
+seqlen = 9
+nEpochs = 10
+batch_size = 300
+n_hidden_1 = 50
+dim_1D = int(seqlen)*20
+weightpath="/lustre/wmy/Project/data/data_MSi/trained models/"
+ppvpath="/lustre/wmy/Project/data/dataframe_ppv/"
 
+# disable GPU
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 class ModelDemo:
     # Define Model
-    def create_model(self, dim_1D, n_hidden_1):
+    def create_model(self):
         model = Sequential()
         model.add(Dense(n_hidden_1, input_dim=dim_1D, activation='tanh'))
         model.add(Dense(1, activation='sigmoid'))
+        model.compile(optimizer='rmsprop',loss='binary_crossentropy', metrics=['accuracy'])
         return model
     # Define Callbacks
     def get_callbacks(self, patience_lr, patience_es, weight_best_path):
@@ -74,7 +83,10 @@ class ModelDemo:
         encoder = OneHotEncoder(
             categories=[list(amino_acids)] * seqlen)
         encoder.fit(x)
-        x = np.array(x)
+        encoded_x = encoder.transform(x).toarray()
+        #dim_1D = len(encoder.categories_)*20
+        # eg.9mers,全连接的输入dim为9*20=180，9是特征的个数，即9个长度，20是20个氨基酸
+        x = np.array(encoded_x)
         y = np.array(y)
 
         # build a blank dataframe
@@ -88,13 +100,7 @@ class ModelDemo:
 
         for train, test in kfold.split(x, y):
             print('\nFold ',fold_var)
-            # train Model params
-            nEpochs = 5
-            #nEpochs = 1
-            #batch_size = 30
-            batch_size = 200 
-
-            n_hidden_1 = 50
+            
             # set callback parms
             patience_lr = 2
             # number of epochs to stop without improving 
@@ -107,21 +113,13 @@ class ModelDemo:
             # 在traindata里随机选择，产生10倍大小的traindata
             trainx10 = choices(train, k=10*len(train))
 
-            # onehot squencing
-            x_to_train = encoder.transform(x[trainx10]).toarray().astype(int)
-            dim_1D = len(encoder.categories_)*20
-            # eg.9mers,全连接的输入dim为9*20=180，9是特征的个数，即9个长度，20是20个氨基酸
-            y_to_train = np.array(y[trainx10])
-
             # create model
             model = None
-            model = self.create_model(dim_1D, n_hidden_1)
-            # Compile model
-            model.compile(optimizer='rmsprop',
-                          loss='binary_crossentropy', metrics=['accuracy'])
+            model = self.create_model()
+           
 
             # Fit the model
-            model.fit(x_to_train, y_to_train, verbose=1,
+            model.fit(x[trainx10], y[trainx10], verbose=1,
                       batch_size=batch_size,
                       validation_data = (x[test], y[test]),
                       epochs=nEpochs, shuffle=True,
@@ -174,12 +172,14 @@ class ModelDemo:
         df_ppvsores.to_csv(modelname)
         self.model = model
 
-    def predict(self, peptides):
+    def predict(self, peptides,weights):
         x = [list(p) for p in peptides]
         encoder = OneHotEncoder(
             categories=[list(amino_acids)] * seqlen)
         encoder.fit(x)
-        return self.model.predict(encoder.transform(x).toarray()).squeeze()
+        model=self.create_model()
+        model.load_weights(weights)
+        return model.predict(encoder.transform(x).toarray()).squeeze()
 
 negdatafile = sys.argv[1]
 print('neg data ',negdatafile)

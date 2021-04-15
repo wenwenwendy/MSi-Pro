@@ -29,12 +29,12 @@ amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 
 # train Model params
 nEpochs = 10
-batch_size = 30
+batch_size = 300
 n_hidden_1 = 50
 seqlen = 11
 dim_1D = int(seqlen)*20
-weightpath="/lustre/wmy/Project/data/data_MSi/trained models/"
-ppvpath="/lustre/wmy/Project/data/dataframe_ppv/"
+weightpath="/lustre/wmy/Project/data/data_MSi/trained models/tmp/"
+ppvpath="/lustre/wmy/Project/data/dataframe_ppv/tmp/"
 
 # disable GPU
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -70,7 +70,7 @@ class ModelDemo:
 
         ###### Data prep ######   
         #used choices generate decoys_train 999 times of hits_train
-        nonbinders= choices(nonbinders,k=9*len(binders))
+        nonbinders= choices(nonbinders,k=999*len(binders))
 
         x = [list(p) for p in binders] + [list(s) for s in nonbinders]
         y = [1] * len(binders) + [0] * len(nonbinders)
@@ -103,7 +103,7 @@ class ModelDemo:
             callbacks = self.get_callbacks(patience_lr, patience_es,weight_best_path)
             
             # 在traindata里随机选择，产生10倍大小的traindata
-            trainx10 = choices(train, k=1*len(train))
+            trainx10 = choices(train, k=10*len(train))
 
             # create model
             model = None
