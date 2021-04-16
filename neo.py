@@ -35,8 +35,8 @@ nEpochs = 10
 batch_size = 300
 n_hidden_1 = 50
 dim_1D = int(seqlen)*20
-weightpath="/lustre/wmy/Project/data/data_MSi/trained models/"
-ppvpath="/lustre/wmy/Project/data/dataframe_ppv/"
+#weightpath="/home/wendy/neoantigen/9mer_nonbinder99/"
+#ppvpath="/home/wendy/neoantigen/9mer_nonbinder99/"
 
 # disable GPU
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -65,7 +65,7 @@ class ModelDemo:
 
     def get_ppv(self,df_ppv):
         df_ppv.sort_values("y_pred",inplace=True,ascending=False)
-        length_top=len(df_ppv)*0.001
+        length_top=len(df_ppv)*0.01
         reindex_dfppv=df_ppv.reset_index()
         cut_reindex_dfppv=reindex_dfppv.loc[:int(length_top)]
         counting_cut_reindex_dfppv=cut_reindex_dfppv.loc[:,'y_test'].value_counts()
@@ -76,7 +76,7 @@ class ModelDemo:
 
         ###### Data prep ######   
         #used choices generate decoys_train 999 times of hits_train
-        nonbinders= choices(nonbinders,k=999*len(binders))
+        nonbinders= choices(nonbinders,k=99*len(binders))
 
         x = [list(p) for p in binders] + [list(s) for s in nonbinders]
         y = [1] * len(binders) + [0] * len(nonbinders)
@@ -105,7 +105,7 @@ class ModelDemo:
             patience_lr = 2
             # number of epochs to stop without improving 
             patience_es = 1
-            weight_best_path =  modelname + "." + str(fold_var) + '.h5'
+            weight_best_path = modelname + "." + str(fold_var) + '.h5'
             #save model at every fold
             #model.save('/lustre/wendy/movebyzx/data/model_trained/'+ modelname +'_fold_var'+ str(fold_var)+".h5")
             callbacks = self.get_callbacks(patience_lr, patience_es,weight_best_path)
