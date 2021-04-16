@@ -31,10 +31,10 @@ amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 nEpochs = 10
 batch_size = 300
 n_hidden_1 = 50
-seqlen = 11
+seqlen = 9
 dim_1D = int(seqlen)*20
-weightpath="/lustre/wmy/Project/data/data_MSi/trained models/tmp/"
-ppvpath="/lustre/wmy/Project/data/dataframe_ppv/tmp/"
+weightpath="/lustre/wmy/Project/data/data_MSi/trained models/"
+ppvpath="/lustre/wmy/Project/data/dataframe_ppv/"
 
 # disable GPU
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -60,7 +60,7 @@ class ModelDemo:
 
     def get_ppv(self,df_ppv):
         df_ppv.sort_values("y_pred",inplace=True,ascending=False)
-        length_top=len(df_ppv)*0.001
+        length_top=len(df_ppv)*0.1
         reindex_dfppv=df_ppv.reset_index()
         cut_reindex_dfppv=reindex_dfppv.loc[:int(length_top)]
         counting_cut_reindex_dfppv=cut_reindex_dfppv.loc[:,'y_test'].value_counts()
@@ -70,7 +70,7 @@ class ModelDemo:
 
         ###### Data prep ######   
         #used choices generate decoys_train 999 times of hits_train
-        nonbinders= choices(nonbinders,k=999*len(binders))
+        nonbinders= choices(nonbinders,k=9*len(binders))
 
         x = [list(p) for p in binders] + [list(s) for s in nonbinders]
         y = [1] * len(binders) + [0] * len(nonbinders)
