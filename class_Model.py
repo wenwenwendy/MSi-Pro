@@ -63,6 +63,7 @@ class ModelDemo:
         length_top=len(df_ppv)*0.1
         reindex_dfppv=df_ppv.reset_index()
         cut_reindex_dfppv=reindex_dfppv.loc[:int(length_top)]
+        print(cut_reindex_dfppv)
         counting_cut_reindex_dfppv=cut_reindex_dfppv.loc[:,'y_test'].value_counts()
         defined_ppv=counting_cut_reindex_dfppv[1]/length_top
         return defined_ppv
@@ -163,7 +164,7 @@ class ModelDemo:
         df_ppvsores.head()
         df_ppvsores.to_csv(ppvpath+modelname)
         self.model = model
-    def predict(self, peptides,weights):
+    def predict(self,peptides,weights):
             x = [list(p) for p in peptides]
             encoder = OneHotEncoder(
                 categories=[list(amino_acids)] * seqlen)
