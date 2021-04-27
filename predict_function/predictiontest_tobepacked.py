@@ -16,12 +16,25 @@ np.random.seed(seed)
 #Create model
 model_class = ModelDemo()
 
+
+import argparse
+parser = argparse.ArgumentParser(description='manual to this script')
+parser.add_argument('--binder_xlsx', type=str, default = None)
+parser.add_argument('--alleletxt', type=str, default=None)
+parser.add_argument('--savedir', type=str, default=None)
+parser.add_argument('--modelweight_dir', type=str, default=None)
+args = parser.parse_args()
+print(args.binder_xlsx)
+print(args.alleletxt)
+
+
+
 ###load data###
-binder_xlsx = (sys.argv[1])#load DFCI-5283-9.xlsx data to evaluate
+binder_xlsx = args.binder_xlsx#load DFCI-5283-9.xlsx data to evaluate
 #/lustre/wmy/Project/data/data_MSi/data_evaluate/DFCI-5283-9.xlsx
-alleletxt  = sys.argv[2]#['A0101_9.1.h5','A0201_9.1.h5','B0702_9.1.h5','B0801_9.1.h5','C0701_9.1.h5','C0702_9.1.h5']
-modelweight_dir = sys.argv[3] #/lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/
-savedir = sys.argv[4]#/lustre/wmy/Project/Project-Pan_Allele/predict_function/
+alleletxt  = args.alleletxt #['A0101_9.1.h5','A0201_9.1.h5','B0702_9.1.h5','B0801_9.1.h5','C0701_9.1.h5','C0702_9.1.h5']
+modelweight_dir = args.modelweight_dir #/lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/
+savedir = args.savedir#/lustre/wmy/Project/Project-Pan_Allele/predict_function/
 
 with open(alleletxt, "r") as f: 
     allelelist = f.read().split('\n')
