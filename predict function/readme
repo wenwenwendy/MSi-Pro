@@ -1,8 +1,0 @@
-#usege for predict function
-Input below commond in the terminal:
-eg:
-python predictiontest_tobepacked.py /lustre/wmy/Project/data/data_MSi/data_evaluate/DFCI-5283-9.xlsx A0101_9.1.h5 A0201_9.1.h5 /lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/
-
-/lustre/wmy/Project/data/data_MSi/data_evaluate/DFCI-5283-9.xlsx is the peptide data to be predicted.(by defaut it is data that is binders called by immunoprecipitated with W6/32 antibody)
-A0101_9.1.h5 A0201_9.1.h5 is the alleles to be set as model weight one by one
-/lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/ is the path that restores the modelweights that have been trained before
