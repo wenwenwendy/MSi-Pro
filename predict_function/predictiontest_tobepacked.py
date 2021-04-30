@@ -13,12 +13,10 @@ from random import choices
 seed = 1171
 np.random.seed(seed)
 
-#Create model
-model_class = ModelDemo()
-
 
 import argparse
 parser = argparse.ArgumentParser(description='manual to this script')
+parser.add_argument('--seq_length', type=int, default = 9)
 parser.add_argument('--binder_xlsx', type=str, default = None)
 parser.add_argument('--alleletxt', type=str, default=None)
 parser.add_argument('--savedir', type=str, default=None)
@@ -26,8 +24,10 @@ parser.add_argument('--modelweight_dir', type=str, default=None)
 args = parser.parse_args()
 print(args.binder_xlsx)
 print(args.alleletxt)
+print(args.seq_length)
 
-
+#Create model
+model_class = ModelDemo(args.seq_length)
 
 ###load data###
 binder_xlsx = args.binder_xlsx#load DFCI-5283-9.xlsx data to evaluate

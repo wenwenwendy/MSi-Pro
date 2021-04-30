@@ -28,22 +28,28 @@ np.random.seed(seed)
 amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 
 # train Model params
-nEpochs = 10
-batch_size = 300
-n_hidden_1 = 50
-seqlen = 9
-dim_1D = int(seqlen)*20
-weightpath="/lustre/wmy/Project/data/data_MSi/trained models/"
-ppvpath="/lustre/wmy/Project/data/dataframe_ppv/"
+#nEpochs = 10
+#batch_size = 300
+#n_hidden_1 = 50
+#seqlen = 9
+#dim_1D = int(seqlen)*20
+#weightpath="/lustre/wmy/Project/data/data_MSi/trained models/"
+#ppvpath="/lustre/wmy/Project/data/dataframe_ppv/"
 
 # disable GPU
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 class ModelDemo:
-    # Define Model
+    # Define Model parameters
+    nEpochs = 10
+    batch_size = 300
+    n_hidden_1 = 50
+    def __init__(self,seq_length):
+        self.seqlen = seq_length
+        self.dim_1D = int(self.seqlen)*20
     def create_model(self):
         model = Sequential()
-        model.add(Dense(n_hidden_1, input_dim=dim_1D, activation='tanh'))
+        model.add(Dense(self.n_hidden_1, input_dim=self.dim_1D, activation='tanh'))
         model.add(Dense(1, activation='sigmoid'))
         model.compile(optimizer='rmsprop',loss='binary_crossentropy', metrics=['accuracy'])
         return model
@@ -67,7 +73,7 @@ class ModelDemo:
         counting_cut_reindex_dfppv=cut_reindex_dfppv.loc[:,'y_test'].value_counts()
         defined_ppv=counting_cut_reindex_dfppv[1]/length_top
         return defined_ppv
-    def train(self, binders, nonbinders, modelname):
+    def train(self, binders, nonbinders, modelname,path_savewight,path_saveppv):
 
         ###### Data prep ######   
         #used choices generate decoys_train 999 times of hits_train
@@ -76,7 +82,7 @@ class ModelDemo:
         x = [list(p) for p in binders] + [list(s) for s in nonbinders]
         y = [1] * len(binders) + [0] * len(nonbinders)
         encoder = OneHotEncoder(
-            categories=[list(amino_acids)] * seqlen)
+            categories=[list(amino_acids)] * self.seqlen)
         encoder.fit(x)
         encoded_x = encoder.transform(x).toarray()
         #dim_1D = len(encoder.categories_)*20
@@ -98,7 +104,7 @@ class ModelDemo:
             # set callback parms
             patience_lr = 2
             patience_es = 4
-            weight_best_path = weightpath + modelname +'_fold_var'+ str(fold_var)+'bestweights'+'.h5'
+            weight_best_path = path_savewight + modelname +'_fold_var'+ str(fold_var)+'bestweights'+'.h5'
             #save model at every fold
             #model.save('/lustre/wendy/movebyzx/data/model_trained/'+ modelname +'_fold_var'+ str(fold_var)+".h5")
             callbacks = self.get_callbacks(patience_lr, patience_es,weight_best_path)
@@ -113,9 +119,9 @@ class ModelDemo:
 
             # Fit the model
             model.fit(x[trainx10], y[trainx10], verbose=1,
-                    batch_size=batch_size,
+                    batch_size=self.batch_size,
                     validation_data = (x[test], y[test]),
-                    epochs=nEpochs, shuffle=True,
+                    epochs=self.nEpochs, shuffle=True,
                     class_weight=None, sample_weight=None, initial_epoch=0,
                     callbacks=callbacks)
 
@@ -162,14 +168,17 @@ class ModelDemo:
         #model.summary()
         df_ppvsores=pd.DataFrame(ppvsores)
         df_ppvsores.head()
-        df_ppvsores.to_csv(ppvpath+modelname)
+        df_ppvsores.to_csv(path_saveppv+modelname)
         self.model = model
     def predict(self,peptides,weights):
             x = [list(p) for p in peptides]
             encoder = OneHotEncoder(
-                categories=[list(amino_acids)] * seqlen)
+                categories=[list(amino_acids)] * self.seqlen)
             encoder.fit(x)
             model=self.create_model()
             model.load_weights(weights)
             return model.predict(encoder.transform(x).toarray()).squeeze()
     print('done')
+
+#if __name__ == "__main__":
+#   main()
