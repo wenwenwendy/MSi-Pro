@@ -1,16 +1,16 @@
 #path="/lustre/wmy/Project/data/rawdata/txtfile/11-length/"
 import os
-from class_Model import ModelDemo
+from neo_copy import ModelDemo
 import csv
 
 ########## Load data  ##########
 os.getcwd()  # get current work direction
-os.chdir('/lustre/wmy/Project-4/data/data_MSi/')  # change direction
+os.chdir('/lustre/wmy/Project/data/data_MSi/')  # change direction
 #待读取的文件夹
-decoys_train = open('decoys_train_11.txt', mode='r').readlines()
+decoys_train = open('decoys_train_9.txt', mode='r').readlines()
 decoys_train = [x.strip() for x in decoys_train]
 print('len of decoys_train:',len(decoys_train))
-path="/lustre/wmy/Project-4/data/data_MSi/11_length/"
+path="/lustre/wmy/Project/data/data_MSi/9_length/"
 path_list=os.listdir(path)
 path_list.sort() #对读取的路径进行排序
 
