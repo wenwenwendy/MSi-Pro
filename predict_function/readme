@@ -1,13 +1,14 @@
 #usege for predict function
 Input below commond in the terminal:
 eg:
+python predictiontest_tobepacked.py \
+--seq_length=9
+--binder_xlsx=/lustre/wmy/Project/data/data_MSi/data_evaluate/DFCI-5283-9.xlsx \
+--alleletxt=list_of_alleles.txt \
+--modelweight_dir=/lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/ \
+--savedir=/lustre/wmy/Project/Project-Pan_Allele/predict_function/ \
 
-
-python predictiontest_tobepacked.py --binder_xlsx=/lustre/wmy/Project/data/data_MSi/data_evaluate/DFCI-5283-9.xlsx 
---alleletxt=list_of_alleles.txt 
---modelweight_dir=/lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/ 
---savedir=/lustre/wmy/Project/Project-Pan_Allele/predict_function/
-
+seq_length=9 indicates the input peptides are 9mers length. NOTE:Maksure all your peptides length are sonsisted with this parameters. 
 #/binder_xlsx is the peptide data to be predicted.(by defaut it is data that is binders called by immunoprecipitated with W6/32 antibody)
 #alleletxt is the alleles to be set as model weight one by one
 #modelweight_dir is the path that restores the modelweights that have been trained before
