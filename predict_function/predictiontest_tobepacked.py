@@ -22,6 +22,12 @@ parser.add_argument('--alleletxt', type=str, default=None)
 parser.add_argument('--savedir', type=str, default=None)
 parser.add_argument('--modelweight_dir', type=str, default=None)
 args = parser.parse_args()
+#args.binder_xlsx='/lustre/wmy/Project/data/data_evaluate/DFCI-5283-8.xlsx'
+#args.alleletxt='/lustre/wmy/Project/data/data_evaluate/DFCI-5283.txt'
+#args.modelweight_dir='/lustre/wmy/Project/data/from_Prof.Sun/8mers_k999/models/'
+#args.savedir='/lustre/wmy/Project/data/data_evaluate/'
+
+#args.seq_length=8
 print(args.binder_xlsx)
 print(args.alleletxt)
 print(args.seq_length)
@@ -44,6 +50,7 @@ print('Alleles to be predictied: ',allelelist)
 cutoff_Pvalue=0.2
 
 df_binders=pd.read_excel(binder_xlsx)# for test,nrows = 100
+#print(df_binders)
 binders=df_binders['Peptide'].tolist()  ##generate list of peptides
 print('len of binders:',len(binders))
 
@@ -54,20 +61,32 @@ y_label=[1] * len(binders) # to be predicted peptides label
 #print(y_label)
 
 
-for j in allelelist:
-    modelweight=str(modelweight_dir)+j+'.4.h5' #use the firth weight of the 5fold CV
+df_ppv=pd.DataFrame({"peptides":binders,"y_label" : y_label })
+
+i=1
+for j in allelelist: 
+    modelweight=str(modelweight_dir)+j+'_'+str(args.seq_length)+'.1.h5' 
+    #use the first weight of the 5fold CV
     #allelelist=['A0101_9.1.h5','A0201_9.1.h5','B0702_9.1.h5','B0801_9.1.h5','C0701_9.1.h5','C0702_9.1.h5']
-    y_pred=model_class.predict(x_pred,modelweight)
-    #print(y_pred)
+    if os.path.exists(modelweight):
+        y_pred=model_class.predict(x_pred,modelweight)
+        print(y_pred)
+        print(y_pred.flatten())
+        df_ppv[str(i)+':'+j+"y_pred"] = y_pred.flatten()
+        #print("df_PPV:",df_ppv)
+        df_ppv[str(i)+':'+j+'_pred_label'] = df_ppv[str(i)+':'+j+"y_pred"].apply(lambda x: 1 if x > cutoff_Pvalue else 0)
+        #print(df_ppv.iloc[:,[1,3]])   
+        #df_ppv.to_csv(str(savedir)+j+'.csv')
+    else:
+        print(modelweight,"not exist")
+        df_ppv[str(i)+':'+j+"_pred"] = 0
+        df_ppv[str(i)+':'+j+'_pred_label'] = 0
+    i=i+1
+#lable_sum=df_ppv.iloc[:,[3,5,7]]
+#print(df_ppv.shape[1])
 
-    df_ppv=pd.DataFrame({"peptides":binders,"y_label" : y_label, "y_pred" : y_pred.flatten()})
-    df_ppv['pred_label'] = ''
-    print("df_PPV:",df_ppv)
-
-    df_ppv['pred_label'] = df_ppv.y_pred.apply(lambda x: 1 if x > cutoff_Pvalue else 0)
-    print(df_ppv)
-    df_ppv.to_csv(str(savedir)+j+'.csv')
-
-
-
-
+lable_sum=df_ppv.iloc[:,[3,5,7,9,11,13]] # selcet 6 predict-leabels
+last_col=lable_sum.apply(np.sum,axis=1) #sum 6 predict-labels
+#print(last_col)
+df_ppv['isbinder']=last_col #adding to the last colunm
+df_ppv.to_excel(args.savedir+'prediction result.xlsx')

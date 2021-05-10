@@ -1,0 +1,33 @@
+Readme for HLA binding prediction model MSi-Pro
+
+### environment requirments ###
+python 3.8.5 (base:conda)
+tensorflow ==2.4.1
+keras==2.4.3
+
+### usege for predict function ###
+Input below commond in the terminal:
+eg:
+python predictiontest_tobepacked.py \
+--seq_length=9 \
+--binder_xlsx=/lustre/wmy/Project/data/data_evaluate/DFCI-5283/DFCI-5283-9.xlsx \
+--alleletxt=/lustre/wmy/Project/Project-Pan_Allele/predict_function/DFCI-5283.txt \
+--modelweight_dir=/lustre/wmy/Project/data/from_Prof.Sun/9mer_k=99/models/ \
+--savedir=/lustre/wmy/Project/Project-Pan_Allele/predict_function/prediction_DFCI_5283_9/
+
+*seq_length=9* indicates the input peptides are 9mers length. You can choose it as 8,9,10 and 11, respectively.
+NOTE: Maksure all your input peptides' length is consisted with this parameters. 
+
+*binder_xlsx* is the peptide data to be predicted.(By defaut it is positive data that is called by immunoprecipitated with W6/32 antibody)
+Makesure the peptides' header is named as 'Peptide'. 
+
+*alleletxt* is the gene types(make sure there 6 alleles in the alleletxt) and this allele list will be used as model weight name for prediction one by one
+
+*modelweight_dir* is the path that restores the model weights which have been trained and for 6 allele, each allele weight will be recalled by allele name one by one
+
+*savedir* is the customed path to which users can save the prediction results as excel format
+
+### output explanation ###
+The output will give each peptide's possibility of belonging to each of 6 alleles.
+the last colunm indicates if it is a binder(0 means this peptide not a binder;1 means this peptide belonging to one allele; 
+2 means this peptide belonging to two alleles,and so on)

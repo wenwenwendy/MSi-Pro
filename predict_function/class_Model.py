@@ -1,13 +1,13 @@
 ##environment requirments:python 3.8.5 (base:conda)
-##tensorflow ==2.2
+##tensorflow ==2.4.1
 ##keras==2.4.3
 #path="/lustre/wmy/Project/data/rawdata/txtfile/11-length/"
 from operator import index
 import os
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
-import keras
-import tensorflow
+import keras #print(keras.__version__)=2.4.3
+import tensorflow #tf.__version__=2.4.1
 from keras.models import Sequential, Model
 from keras.layers import Input, Dense
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -77,7 +77,7 @@ class ModelDemo:
 
         ###### Data prep ######   
         #used choices generate decoys_train 999 times of hits_train
-        nonbinders= choices(nonbinders,k=9*len(binders))
+        nonbinders= choices(nonbinders,k=99*len(binders))
 
         x = [list(p) for p in binders] + [list(s) for s in nonbinders]
         y = [1] * len(binders) + [0] * len(nonbinders)
@@ -104,7 +104,7 @@ class ModelDemo:
             # set callback parms
             patience_lr = 2
             patience_es = 4
-            weight_best_path = path_savewight + modelname +'_fold_var'+ str(fold_var)+'bestweights'+'.h5'
+            weight_best_path = path_savewight + modelname + '.'+str(fold_var)+'.h5'
             #save model at every fold
             #model.save('/lustre/wendy/movebyzx/data/model_trained/'+ modelname +'_fold_var'+ str(fold_var)+".h5")
             callbacks = self.get_callbacks(patience_lr, patience_es,weight_best_path)
